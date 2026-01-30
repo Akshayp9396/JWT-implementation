@@ -1,0 +1,120 @@
+<?php
+
+namespace App\Http\Controllers;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\ApiModel;
+class ApiController extends Controller
+{
+    /**
+     * Retrieve the user for the given ID.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+
+    public function __construct()
+    {
+        //$this->middleware('auth');
+    }
+
+    public function checkIn(Request $request)
+    {
+
+        $data = $request->all();
+        if(!empty($data))
+        {
+            $radcheckExist = ApiModel::checkEntryExist((string)$data["roomno"]);
+            if($radcheckExist->isEmpty())
+            {            
+                $data["planname"] = "Default";
+                ApiModel::insertUser($data);
+            }
+            else
+            {
+                ApiModel::updateCheckinEntries($data,$radcheckExist[0]->id);
+            }
+                
+                return  response()->json(['status' => true,'message' => 'CheckedIn Details Added Successfully.', "data"=>[]]);
+        }
+        else
+        {
+            return  response()->json(['status' => false,'message' => 'Required Parameters not found.', "data"=>[]]);    
+        }
+
+
+
+
+    }
+
+    public function extendCheckIn(Request $request)
+    {
+        $data = $request->all();
+
+        if(!empty($data))
+        {
+            $data["planname"] = "universe";
+            ApiModel::extendCheckIn($data);
+            return  response()->json(['status' => true,'message' => 'Checkedout Date Updated Successfully.', "data"=>[]]);
+        }
+        else
+        {
+            return  response()->json(['status' => false,'message' => 'Required Parameters not found.', "data"=>[]]);    
+        }
+
+    }
+
+    public function checkOut(Request $request)
+    {
+        $data = $request->all();
+
+        if(!empty($data))
+        {
+            $data["planname"] = "demo";
+            // ApiModel::checkOut($data);
+            $model = new ApiModel(); 
+            $model->checkOut($data);
+
+            return  response()->json(['status' => true,'message' => 'Checkedout Successfully.', "data"=>[]]);
+        }
+        else
+        {
+            return  response()->json(['status' => false,'message' => 'Required Parameters not found.', "data"=>[]]);    
+        }
+
+    }
+    
+    public function testFunc()
+    {
+	     return  response()->json(['status' => true,'message' => 'Test Function.', "data"=>[]]);
+    }
+
+    public function shiftRoom(Request $request)
+    {
+
+	    $data = $request->all();
+	    
+        if(!empty($data))
+        {
+	    $oldRoomNo = (string)$data["old_roomno"];
+	    $newRoomNo = (string)$data["roomno"];
+            $lastName = $data["lastName"];	
+//  $firstName = $data["firstName"];	    
+	    $radcheckExist = ApiModel::shiftRoom($oldRoomNo,$newRoomNo,$lastName);
+            
+
+                return  response()->json(['status' => true,'message' => 'Room shifted Successfully.', "data"=>[]]);
+        }
+        else
+        {
+            return  response()->json(['status' => false,'message' => 'Required Parameters not found.', "data"=>[]]);
+        }
+
+
+
+
+    }
+
+
+
+}
